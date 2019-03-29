@@ -1,7 +1,7 @@
 // main.js
 
 import getFilter from './filter';
-import getTripPoint from './trip-point';
+import getTripPointView from './trip-point';
 
 
 const POINTS_NODE = document.querySelector(`.trip-day__items`);
@@ -75,13 +75,24 @@ const resetPoints = () => {
   POINTS_NODE.innerHTML = ``;
 };
 
-// Отрисовывает события в количесте count
-const renderTripPoints = (amount) => {
-  const tripPoints = document.createDocumentFragment();
-  for (let i = 0; i < amount; i++) {
-    const point = getTripPoint(createTripPoint());
-    tripPoints.appendChild(point);
+// Создает массив с событиями в количестве count
+const createTripPoints = (count) => {
+  const data = [];
+  while (count > 0) {
+    data.push(createTripPoint());
+    count--;
   }
+
+  return data;
+};
+
+// Отрисовывает события в количесте count
+const renderTripPoints = (data) => {
+  const tripPoints = document.createDocumentFragment();
+  data.forEach((item) => {
+    tripPoints.appendChild(getTripPointView(item));
+  });
+
   POINTS_NODE.appendChild(tripPoints);
 };
 
@@ -96,12 +107,13 @@ const filtersContainer = document.querySelector(`.trip-filter`);
 filtersContainer.insertAdjacentHTML(`afterBegin`, filtersTemplate);
 
 
-renderTripPoints(7);
+const tripData = createTripPoints(7);
+renderTripPoints(tripData);
 
 
 const tripFilter = document.querySelector(`.trip-filter`);
 tripFilter.addEventListener(`change`, () => {
   resetPoints();
   let i = Math.floor(Math.random() * 10) + 1;
-  renderTripPoints(i);
+  renderTripPoints(createTripPoints(i));
 });

@@ -26,7 +26,7 @@ const TripTypeEnum = {
 };
 
 
-const getTripPoint = (point) => {
+const getTripPointView = (point) => {
   const template = `<i class="trip-icon">${TripTypeEnum.properties[point.type].icon}</i>
   <h3 class="trip-point__title">${point.name}</h3>
   <p class="trip-point__schedule">
@@ -45,4 +45,4 @@ const getTripPoint = (point) => {
   return article;
 };
 
-export default getTripPoint;
+export default getTripPointView;
