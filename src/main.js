@@ -71,10 +71,13 @@ const createTripPoint = () => ({
 
 
 // Удаляет все события
+/*
 const resetPoints = () => {
   POINTS_NODE.innerHTML = ``;
 };
+*/
 
+/*
 // Создает массив с событиями в количестве count
 const createTripPoints = (count) => {
   const data = [];
@@ -85,6 +88,7 @@ const createTripPoints = (count) => {
 
   return data;
 };
+*/
 
 // Отрисовывает события в количесте count
 /*
