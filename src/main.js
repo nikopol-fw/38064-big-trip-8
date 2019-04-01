@@ -1,7 +1,7 @@
 // main.js
 
 import getFilter from './filter';
-import getTripPointView from './trip-point';
+import {TripPoint, TripPointEdit} from './trip-point';
 
 
 const POINTS_NODE = document.querySelector(`.trip-day__items`);
@@ -87,6 +87,7 @@ const createTripPoints = (count) => {
 };
 
 // Отрисовывает события в количесте count
+/*
 const renderTripPoints = (data) => {
   const tripPoints = document.createDocumentFragment();
   data.forEach((item) => {
@@ -95,6 +96,7 @@ const renderTripPoints = (data) => {
 
   POINTS_NODE.appendChild(tripPoints);
 };
+*/
 
 
 let filtersTemplate = ``;
@@ -107,13 +109,34 @@ const filtersContainer = document.querySelector(`.trip-filter`);
 filtersContainer.insertAdjacentHTML(`afterBegin`, filtersTemplate);
 
 
+/*
 const tripData = createTripPoints(7);
 renderTripPoints(tripData);
+*/
 
 
+/*
 const tripFilter = document.querySelector(`.trip-filter`);
 tripFilter.addEventListener(`change`, () => {
   resetPoints();
   let i = Math.floor(Math.random() * 10) + 1;
   renderTripPoints(createTripPoints(i));
 });
+*/
+
+
+const tripPoint = new TripPoint(createTripPoint());
+const tripPointEdit = new TripPointEdit(createTripPoint());
+POINTS_NODE.appendChild(tripPoint.render());
+
+tripPoint.onEdit = () => {
+  tripPointEdit.render();
+  POINTS_NODE.replaceChild(tripPointEdit.element, tripPoint.element);
+  tripPoint.unrender();
+};
+
+tripPointEdit.onSave = () => {
+  tripPoint.render();
+  POINTS_NODE.replaceChild(tripPoint.element, tripPointEdit.element);
+  tripPointEdit.unrender();
+};
