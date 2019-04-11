@@ -8,6 +8,8 @@ export default class Component {
     if (new.target === Component) {
       throw new Error(`Can't instantiate Component, only concrete one.`);
     }
+
+    this._element = null;
   }
 
   get template() {
@@ -28,4 +30,6 @@ export default class Component {
     this.unbind();
     this._element = null;
   }
+
+  update() {}
 }
