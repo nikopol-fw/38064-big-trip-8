@@ -34,7 +34,7 @@ tripPointEdit.onSave = (newObject) => {
   point.name = newObject.name;
   point.price = newObject.price;
   point.offers = newObject.offers;
-  console.log(point);
+  // console.log(point);
 
   tripPoint.update(point);
   tripPoint.render();

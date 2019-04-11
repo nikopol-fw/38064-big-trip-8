@@ -157,7 +157,7 @@ export default class TripPointEdit extends Component {
     }
   }
 
-  //
+  // Создает новый объект с данными из формы
   _processForm(formData) {
     const entry = {
       type: 0,
