@@ -1,7 +1,7 @@
 // main.js
 
-import {FILTERS} from './data';
-import {getFilter, createTripPoint} from './utils';
+import {FILTERS, point} from './data';
+import {getFilter} from './utils';
 import TripPoint from './component.trip-point';
 import TripPointEdit from './component.trip-point-edit';
 
@@ -19,8 +19,8 @@ const filtersContainer = document.querySelector(`.trip-filter`);
 filtersContainer.insertAdjacentHTML(`afterBegin`, filtersTemplate);
 
 
-const tripPoint = new TripPoint(createTripPoint());
-const tripPointEdit = new TripPointEdit(createTripPoint());
+const tripPoint = new TripPoint(point);
+const tripPointEdit = new TripPointEdit(point);
 POINTS_NODE.appendChild(tripPoint.render());
 
 tripPoint.onEdit = () => {
@@ -29,7 +29,14 @@ tripPoint.onEdit = () => {
   tripPoint.unrender();
 };
 
-tripPointEdit.onSave = () => {
+tripPointEdit.onSave = (newObject) => {
+  point.type = newObject.type;
+  point.name = newObject.name;
+  point.price = newObject.price;
+  point.offers = newObject.offers;
+  // console.log(point);
+
+  tripPoint.update(point);
   tripPoint.render();
   POINTS_NODE.replaceChild(tripPoint.element, tripPointEdit.element);
   tripPointEdit.unrender();

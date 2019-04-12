@@ -1,6 +1,6 @@
 // component.trip-point.js
 
-import {PointType} from './utils';
+import {PointType, Offers} from './utils';
 import Component from './component.base';
 
 
@@ -20,18 +20,25 @@ export default class TripPoint extends Component {
   }
 
   get template() {
-    return `<article class="trip-point">
-      <i class="trip-icon">${PointType.properties[this._type].icon}</i>
-      <h3 class="trip-point__title">${this._name}</h3>
+    return `
+    <article class="trip-point">
+      <i class="trip-icon">${PointType.properties.get(this._type).icon}</i>
+      <h3 class="trip-point__title"
+        >${PointType.properties
+          .get(this._type).name}${PointType.properties
+          .get(this._type).type === `travel` ? ` to` : ``}${PointType.properties
+          .get(this._type).name === `Check` ? ` into` : ``} ${this._name}</h3>
       <p class="trip-point__schedule">
         <span class="trip-point__timetable">10:00&nbsp;&mdash; 11:00</span>
         <span class="trip-point__duration">1h 30m</span>
       </p>
       <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
       <ul class="trip-point__offers">${[...this._offers]
-        .map((offer) => `<li><button class="trip-point__offer">${offer}</button></li>`)
+        .map((offer, ind) => ind < 3 ? `
+          <li><button class="trip-point__offer">${Offers.properties.get(offer).name || ``}</button></li>
+        `.trim() : ``)
         .join(``)}</ul>
-    </article>`;
+    </article>`.trim();
   }
 
   get element() {
@@ -54,5 +61,12 @@ export default class TripPoint extends Component {
 
   unbind() {
     this._element.removeEventListener(`click`, this._onEditPointClick);
+  }
+
+  update(data) {
+    this._type = data.type;
+    this._name = data.name;
+    this._price = data.price;
+    this._offers = data.offers;
   }
 }

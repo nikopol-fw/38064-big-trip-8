@@ -1,32 +1,44 @@
 // utils.js
 
-import {OFFERS} from './data';
-
-
 // Cловарь для типов событий
 const PointType = {
-  TAXI: 1,
-  BUS: 2,
-  TRAIN: 3,
-  SHIP: 4,
-  TRANSPORT: 5,
-  DRIVE: 6,
-  FLIGHT: 7,
-  CHECKIN: 8,
-  SIGHTSEEING: 9,
-  RESTAURANT: 10,
-  properties: {
-    1: {name: `Taxi`, icon: `🚕`},
-    2: {name: `Bus`, icon: `🚌`},
-    3: {name: `Train`, icon: `🚂`},
-    4: {name: `Ship`, icon: `️🛳️`},
-    5: {name: `Transport`, icon: `🚊`},
-    6: {name: `Drive`, icon: `🚗`},
-    7: {name: `Flight`, icon: `️✈️`},
-    8: {name: `Check-in`, icon: `🏨`},
-    9: {name: `Sightseeing`, icon: `️🏛️`},
-    10: {name: `Restaurant`, icon: `🍴`},
-  }
+  'taxi': 1,
+  'bus': 2,
+  'train': 3,
+  'ship': 4,
+  'transport': 5,
+  'drive': 6,
+  'flight': 7,
+  'check-in': 8,
+  'sightseeing': 9,
+  'restaurant': 10,
+  'properties': new Map([
+    [1, {name: `Taxi`, icon: `🚕`, type: `travel`, serviceName: `taxi`}],
+    [2, {name: `Bus`, icon: `🚌`, type: `travel`, serviceName: `bus`}],
+    [3, {name: `Train`, icon: `🚂`, type: `travel`, serviceName: `train`}],
+    [4, {name: `Ship`, icon: `️🛳️`, type: `travel`, serviceName: `ship`}],
+    [5, {name: `Transport`, icon: `🚊`, type: `travel`, serviceName: `transport`}],
+    [6, {name: `Drive`, icon: `🚗`, type: `travel`, serviceName: `drive`}],
+    [7, {name: `Flight`, icon: `️✈️`, type: `travel`, serviceName: `flight`}],
+    [8, {name: `Check`, icon: `🏨`, type: `event`, serviceName: `check-in`}],
+    [9, {name: `Sightseeing`, icon: `️🏛️`, type: `event`, serviceName: `sightseeing`}],
+    [10, {name: `Restaurant`, icon: `🍴`, type: `event`, serviceName: `restaurant`}],
+  ]),
+  'types': [`travel`, `event`]
+};
+
+// Словарь для дополнительных предложений
+const Offers = {
+  'add-luggage': 1,
+  'switch-to-comfort-class': 2,
+  'add-meal': 3,
+  'choose-seats': 4,
+  'properties': new Map([
+    [1, {name: `Add luggage`, pointType: [2, 3, 4, 5, 7], cost: 30, serviceName: `add-luggage`}],
+    [2, {name: `Switch to comfort class`, pointType: [1, 3, 4, 5, 7, 8], cost: 100, serviceName: `switch-to-comfort-class`}],
+    [3, {name: `Add meal`, pointType: [3, 4, 7, 8], cost: 15, serviceName: `add-meal`}],
+    [4, {name: `Choose seats`, pointType: [3, 4, 7], cost: 5, serviceName: `choose-seats`}],
+  ])
 };
 
 // Создает и возвращает dom элемент на основе полученной строки шаблона
@@ -52,35 +64,15 @@ const getFilter = (id, name, isChecked) => {
   return filterTemplate;
 };
 
-// Формирует множество со случайным набором из OFFERS
-const getOffers = () => {
-  const offers = new Set();
-  let amount = Math.floor(Math.random() * (2 + 1));
-  while (amount > 0) {
-    let setSize = offers.size;
-    offers.add(OFFERS[Math.floor(Math.random() * 4)]);
-    if (offers.size > setSize) {
-      amount--;
-    }
-  }
-
-  return offers;
-};
-
 // Тестовые данные для точки путешествия
 const createTripPoint = () => ({
   type: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10][Math.floor(Math.random() * 10)],
-  name: [
-    `Taxi to Airport`,
-    `Flight to Geneva`,
-    `Drive to Chamonix`,
-    `Check into a hotel`
-  ][Math.floor(Math.random() * 4)],
+  name: `test`,
   // 43200000 (12 часов) - 1800000 (30 мин)
   timeDuration: Math.floor(Math.random() * (43200000 + 1 - 1800000)) + 1800000, // 30m - 12h,
   // от 1 до 1000
   price: Math.floor(Math.random() * 1000) + 1,
-  offers: getOffers(),
+  offers: new Set(),
   img: `http://picsum.photos/300/150?r=${Math.random()}`,
   descr: [
     `Lorem ipsum dolor sit amet, consectetur adipiscing elit.`,
@@ -98,4 +90,4 @@ const createTripPoint = () => ({
 });
 
 
-export {PointType, createElement, getFilter, createTripPoint};
+export {PointType, Offers, createElement, getFilter, createTripPoint};

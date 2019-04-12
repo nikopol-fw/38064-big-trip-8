@@ -1,5 +1,7 @@
 // data.js
 
+import {createTripPoint} from "./utils";
+
 // Фильтры
 const FILTERS = [
   {
@@ -17,8 +19,8 @@ const FILTERS = [
   }
 ];
 
-// Предложения
-const OFFERS = [`Add luggage`, `Switch to comfort class`, `Add meal`, `Choose seats`];
+
+const point = createTripPoint();
 
 
-export {FILTERS, OFFERS};
+export {FILTERS, point};
