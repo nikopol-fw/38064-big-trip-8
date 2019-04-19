@@ -4,7 +4,7 @@ import {PointType, Offers} from './utils';
 import Component from './component.base';
 
 
-// Карточка точки путешествия
+// PointTrip View
 export default class TripPoint extends Component {
   constructor(point) {
     super();
@@ -12,6 +12,8 @@ export default class TripPoint extends Component {
     this._name = point.name;
     this._price = point.price;
     this._offers = point.offers;
+    this._startDateTime = point.startDateTime;
+    this._endDateTime = point.endDateTime;
 
     this._element = null;
     this._onEdit = null;
