@@ -2,25 +2,38 @@
 
 import {createTripPoint} from "./utils";
 
+
+// Количество карточек
+const POINTS_COUNT = 8;
+
 // Фильтры
-const FILTERS = [
+const filters = new Set([
   {
     id: `everything`,
     name: `Everything`,
-    isChecked: true
+    isActive: true
   }, {
     id: `future`,
     name: `Future`,
-    isChecked: false
+    isActive: false
   }, {
     id: `past`,
     name: `Past`,
-    isChecked: false
+    isActive: false
   }
-];
+]);
 
 
-const point = createTripPoint();
+const getTripPoints = (count) => {
+  const newPoints = [];
+  for (let i = 0; i < count; i++) {
+    newPoints.push(createTripPoint());
+  }
+  return newPoints;
+};
 
 
-export {FILTERS, point};
+const cards = getTripPoints(POINTS_COUNT);
+
+
+export {filters, cards};

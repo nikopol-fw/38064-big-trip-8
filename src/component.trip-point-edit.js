@@ -6,7 +6,7 @@ import {PointType, Offers} from './utils';
 import Component from './component.base';
 
 
-// Карточка точки путешествия в режиме редактирования
+// PointTrip edit View
 export default class TripPointEdit extends Component {
   constructor(point) {
     super();
@@ -14,11 +14,14 @@ export default class TripPointEdit extends Component {
     this._name = point.name;
     this._price = point.price;
     this._offers = point.offers;
+    this._startDateTime = point.startDateTime;
+    this._endDateTime = point.endDateTime;
 
     this._element = null;
     this._onSave = null;
 
-    this._onSavePointClick = this._onSavePointClick.bind(this);
+    this._onSavePoint = this._onSavePoint.bind(this);
+    this._onDeletePoint = this._onDeletePoint.bind(this);
     this._onChangeForm = this._onChangeForm.bind(this);
   }
 
@@ -138,6 +141,10 @@ export default class TripPointEdit extends Component {
     this._onSave = fn;
   }
 
+  set onDelete(fn) {
+    this._onDelete = fn;
+  }
+
   // Обновляем контент элемента компоненты при изменении типа точки маршрута
   _updateViewPointTypeChange(value) {
     this._type = PointType[value];
@@ -170,7 +177,6 @@ export default class TripPointEdit extends Component {
     const pointEditMapper = TripPointEdit.createMapper(entry);
 
     for (const pair of formData.entries()) {
-      // console.log(pair);
       const [property, value] = pair;
       if (pointEditMapper[property]) {
         pointEditMapper[property](value);
@@ -180,7 +186,8 @@ export default class TripPointEdit extends Component {
     return entry;
   }
 
-  _onSavePointClick(evt) {
+  // Submit PointEdit
+  _onSavePoint(evt) {
     evt.preventDefault();
 
     if (typeof this._onSave === `function`) {
@@ -189,19 +196,28 @@ export default class TripPointEdit extends Component {
 
       this.update(newData);
       this._onSave(newData);
+    }
+  }
 
-      // console.log(newData);
+  // Reset PointEdit
+  _onDeletePoint(evt) {
+    evt.preventDefault();
+
+    if (typeof this._onDelete === `function`) {
+      this._onDelete();
     }
   }
 
   bind() {
+    const from = this._element.querySelector(`form`);
     // Изменение типа point
-    this._element.querySelector(`form`)
-        .addEventListener(`change`, this._onChangeForm);
+    from.addEventListener(`change`, this._onChangeForm);
 
     // Сохранение point
-    this._element.querySelector(`form`)
-        .addEventListener(`submit`, this._onSavePointClick);
+    from.addEventListener(`submit`, this._onSavePoint);
+
+    // Удаление point
+    from.addEventListener(`reset`, this._onDeletePoint);
 
     // Подключаем flatpickr
     const inputTime = this._element.querySelector(`.point__input[name=time]`);
@@ -219,8 +235,10 @@ export default class TripPointEdit extends Component {
   }
 
   unbind() {
-    this._element.querySelector(`.point__button--save`)
-        .addEventListener(`click`, this._onSavePointClick);
+    const form = this._element.querySelector(`form`);
+    form.removeEventListener(`change`, this._onChangeForm);
+    form.removeEventListener(`submit`, this._onSavePoint);
+    form.removeEventListener(`reset`, this._onDeletePoint);
   }
 
   update(data) {
@@ -230,12 +248,22 @@ export default class TripPointEdit extends Component {
     this._offers = data.offers;
   }
 
-  // Метод для связывания полей формы с объектом для записи данных
+  /**
+   * Метод для связывания полей формы с объектом для записи данных
+   * @param {Object} target
+   * @param {number} target.type
+   * @param {string} target.name
+   * @param {number} target.price
+   * @param {Set}    target.offers
+   * @param {string} target.descr
+   *
+   * @return {Object}
+   */
   static createMapper(target) {
     return {
-      'travel-way': (value) => (target.type = PointType[value]),
+      'travel-way': (value) => (target.type = +PointType[value]),
       'destination': (value) => (target.name = value),
-      'price': (value) => (target.price = value),
+      'price': (value) => (target.price = +value),
       'offer': (value) => target.offers.add(Offers[value])
     };
   }
