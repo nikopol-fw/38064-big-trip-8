@@ -1,7 +1,8 @@
 // main.js
 
-import {filters, cards} from './data';
+import {filters} from './data';
 import {createChart, prepareMoneyChartData, prepareTransportChartData, updateChart, getChartLabel, CHART_PADDING} from './utils';
+import API from './api';
 
 import TripPoint from './component.trip-point';
 import TripPointEdit from './component.trip-point-edit';
@@ -27,8 +28,14 @@ const transportChart = createChart(transportCtx);
 // Размер одной графы
 const BAR_HEIGHT = 55;
 
+// Данные для взаимодействия с API
+const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+const URL = `https://es8-demo-srv.appspot.com/big-trip`;
 
-window.moneyChart = moneyChart;
+const api = new API(URL, AUTHORIZATION);
+
+
+//window.moneyChart = moneyChart;
 
 
 // Фильтровать Point
@@ -131,8 +138,13 @@ statsBtn.addEventListener(`click`, (evt) => {
   const transportData = transportChartData.map((item) => item.count);
   const transportFormatter = (val) => `${val}x`;
 
-  monetCtx.height = (BAR_HEIGHT + CHART_PADDING * 2) * moneyChartData.length;
-  transportCtx.height = (BAR_HEIGHT + CHART_PADDING * 2) * transportChartData.length;
+  const moneyChartHeight = (BAR_HEIGHT + CHART_PADDING * 2) * moneyChartData.length;
+  monetCtx.height = moneyChartHeight;
+  moneyChart.height = moneyChartHeight;
+
+  const transportChartHeight = (BAR_HEIGHT + CHART_PADDING * 2) * transportChartData.length;
+  transportCtx.height = transportChartHeight;
+  transportChart.height = transportChartHeight;
 
   updateChart(moneyChart, `MONEY`, moneyLabels, moneyData, moneyFormatter);
   updateChart(transportChart, `TRANSPORT`, transportLabels, transportData, transportFormatter);
@@ -149,5 +161,14 @@ tableBtn.addEventListener(`click`, (evt) => {
 });
 
 
+const cards = api.getPoints()
+  .then((points) => {
+    console.log(points);
+    renderPoints(points);
+  })
+  .catch((error) => {
+    console.log(error);
+    throw error;
+  });
+
 renderFilter(filters);
-renderPoints(cards);

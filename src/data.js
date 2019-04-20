@@ -36,4 +36,4 @@ const getTripPoints = (count) => {
 const cards = getTripPoints(POINTS_COUNT);
 
 
-export {filters, cards};
+export {filters};

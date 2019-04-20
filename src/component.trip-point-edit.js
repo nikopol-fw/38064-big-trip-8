@@ -75,7 +75,8 @@ export default class TripPointEdit extends Component {
 
           <label class="point__time">
             choose time
-            <input class="point__input" type="text" value="00:00 — 00:00" name="time" placeholder="00:00 — 00:00">
+            <input class="point__input" type="text" value="19:00" name="date-start" placeholder="19:00">
+            <input class="point__input" type="text" value="21:00" name="date-end" placeholder="21:00">
           </label>
 
           <label class="point__price">
@@ -220,17 +221,23 @@ export default class TripPointEdit extends Component {
     from.addEventListener(`reset`, this._onDeletePoint);
 
     // Подключаем flatpickr
-    const inputTime = this._element.querySelector(`.point__input[name=time]`);
-    flatpickr(inputTime, {
-      'mode': `range`,
+    const inputTimeStart = this._element.querySelector(`.point__input[name=date-start]`);
+    const inputTimeEnd = this._element.querySelector(`.point__input[name=date-end]`);
+    flatpickr(inputTimeStart, {
+      // 'mode': `range`,
       'enableTime': true,
       'altInput': true,
       'altFormat': `H:i`,
       'dateFormat': `H:i`,
       'time_24hr': true,
-      'locale': {
-        rangeSeparator: ` — `
-      }
+    });
+    flatpickr(inputTimeEnd, {
+      // 'mode': `range`,
+      'enableTime': true,
+      'altInput': true,
+      'altFormat': `H:i`,
+      'dateFormat': `H:i`,
+      'time_24hr': true,
     });
   }
 
