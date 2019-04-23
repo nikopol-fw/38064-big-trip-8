@@ -1,19 +1,23 @@
 // component.trip-point.js
 
-import {PointType, Offers} from './utils';
+import moment from 'moment';
+
+import {PointType} from './utils';
+
 import Component from './component.base';
 
 
 // PointTrip View
 export default class TripPoint extends Component {
-  constructor(point) {
+  constructor(data) {
     super();
-    this._type = point.type;
-    this._name = point.name;
-    this._price = point.price;
-    this._offers = point.offers;
-    this._startDateTime = point.startDateTime;
-    this._endDateTime = point.endDateTime;
+    this._id = data.id;
+    this._type = data.type;
+    this._dest = data.dest.name;
+    this._dateFrom = data.dateFrom;
+    this._dateTo = data.dateTo;
+    this._basePrice = data.basePrice;
+    this._offers = data.offers;
 
     this._element = null;
     this._onEdit = null;
@@ -24,20 +28,18 @@ export default class TripPoint extends Component {
   get template() {
     return `
     <article class="trip-point">
-      <i class="trip-icon">${PointType.properties.get(this._type).icon}</i>
-      <h3 class="trip-point__title"
-        >${PointType.properties
-          .get(this._type).name}${PointType.properties
-          .get(this._type).type === `travel` ? ` to` : ``}${PointType.properties
-          .get(this._type).name === `Check` ? ` into` : ``} ${this._name}</h3>
+      <i class="trip-icon">${PointType[this._type].icon}</i>
+      <h3 class="trip-point__title">${this._getTitle()} ${this._dest}</h3>
       <p class="trip-point__schedule">
-        <span class="trip-point__timetable">10:00&nbsp;&mdash; 11:00</span>
-        <span class="trip-point__duration">1h 30m</span>
+        <span class="trip-point__timetable"
+          >${moment(this._dateFrom).format(`H:mm`)}&nbsp;&mdash; ${moment(this._dateTo).format(`H:mm`)}</span>
+        <span class="trip-point__duration">${this._getDuration()}</span>
       </p>
-      <p class="trip-point__price">&euro;&nbsp;${this._price}</p>
+      <p class="trip-point__price">&euro;&nbsp;${this._basePrice}</p>
       <ul class="trip-point__offers">${[...this._offers]
+        .filter((offer) => offer.accepted)
         .map((offer, ind) => ind < 3 ? `
-          <li><button class="trip-point__offer">${Offers.properties.get(offer).name || ``}</button></li>
+          <li><button class="trip-point__offer">${offer.title}</button></li>
         `.trim() : ``)
         .join(``)}</ul>
     </article>`.trim();
@@ -49,6 +51,17 @@ export default class TripPoint extends Component {
 
   set onEdit(fn) {
     this._onEdit = fn;
+  }
+
+  _getTitle() {
+    return `${PointType[this._type].name} ${PointType[this._type].category === `travel` ? `to` : `at`}`;
+  }
+
+  _getDuration() {
+    const duration = moment.duration(moment(this._dateTo).diff(this._dateFrom));
+    return `${duration.get(`d`) ? `${duration.get(`d`)}d ` : ``}` +
+           `${duration.get(`h`) ? `${duration.get(`h`)}h ` : ``}` +
+           `${duration.get(`m`)}m`;
   }
 
   _onEditPointClick() {
@@ -67,8 +80,10 @@ export default class TripPoint extends Component {
 
   update(data) {
     this._type = data.type;
-    this._name = data.name;
-    this._price = data.price;
+    this._dest = data.dest.name;
+    this._dateFrom = data.dateFrom;
+    this._dateTo = data.dateTo;
+    this._basePrice = data.basePrice;
     this._offers = data.offers;
   }
 }

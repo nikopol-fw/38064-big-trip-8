@@ -1,7 +1,6 @@
 // main.js
 
-import {filters} from './data';
-import {createChart, prepareMoneyChartData, prepareTransportChartData, updateChart, getChartLabel, CHART_PADDING} from './utils';
+import {createChart, prepareMoneyChartData, prepareTransportChartData, updateChart, getChartLabel, CHART_PADDING, filters} from './utils';
 import API from './api';
 
 import TripPoint from './component.trip-point';
@@ -29,13 +28,102 @@ const transportChart = createChart(transportCtx);
 const BAR_HEIGHT = 55;
 
 // Данные для взаимодействия с API
-const AUTHORIZATION = `Basic dXNlckBwYXNzd29yZAo=${Math.random()}`;
+// const AUTHORIZATION = `Basic da2dDQADQDDqFqGWFggsfdg=${Math.random()}`;
+const AUTHORIZATION = `Basic da2dDQADQDDqFqGWFdADQafW`;
 const URL = `https://es8-demo-srv.appspot.com/big-trip`;
 
 const api = new API(URL, AUTHORIZATION);
 
 
-//window.moneyChart = moneyChart;
+/**
+ * Обновляет данные Point
+ * @param {ModelPoint} newPoint
+ * @param {number} ind
+ *
+ * @return {ModelPoint}
+ */
+const updatePoint = (newPoint, ind) => {
+  Object.assign(points[ind], newPoint);
+  return points[ind];
+};
+
+// Обнулить Point из массива Points
+const deletePoint = (ind) => {
+  points[ind] = null;
+  return points;
+};
+
+
+// Отрисовать карточки точек маршрута
+const renderPoints = (points, dests, offers) => {
+  POINTS_NODE.innerHTML = ``;
+  const newPointsFragment = document.createDocumentFragment();
+
+  points.forEach((point, ind) => {
+    if (point) {
+      const tripPoint = new TripPoint(point);
+      const tripPointEdit = new TripPointEdit(point, dests, offers);
+
+      /**
+       * Редактирование карточки
+       */
+      tripPoint.onEdit = () => {
+        tripPointEdit.render();
+        POINTS_NODE.replaceChild(tripPointEdit.element, tripPoint.element);
+        tripPoint.unrender();
+      };
+
+      /**
+       * Сохранение карточки
+       * @param {ModelPoint} newObject
+       */
+      tripPointEdit.onSave = (newObject) => {
+        const submitBtn = tripPointEdit.element.querySelector(`.point__button[type=submit]`);
+        const resetBtn = tripPointEdit.element.querySelector(`.point__button[type=reset]`);
+        tripPointEdit.element.style.boxShadow = ``;
+        submitBtn.textContent = `Saving...`;
+        submitBtn.disabled = true;
+        resetBtn.disabled = true;
+        const updatedPoint = updatePoint(newObject, ind);
+        api.updatePoint(updatedPoint.id, updatedPoint.toRAW())
+          .then((newPoint) => {
+            tripPoint.update(newPoint);
+            tripPoint.render();
+            POINTS_NODE.replaceChild(tripPoint.element, tripPointEdit.element);
+            tripPointEdit.unrender();
+          })
+          .catch((error) => {
+            submitBtn.textContent = `Save`;
+            submitBtn.disabled = false;
+            resetBtn.disabled = false;
+            tripPointEdit.element.style.boxShadow = `0 0px 20px 0 rgba(255, 0, 0, 1)`;
+            throw error;
+          });
+      };
+
+      /**
+       * Удаление карточки
+       * @param {number} id
+       */
+      tripPointEdit.onDelete = (id) => {
+        api.deletePoint(id)
+          .then(() => {
+            tripPointEdit.element.remove();
+            tripPointEdit.unrender();
+            deletePoint(ind);
+          })
+          .catch((error) => {
+            throw error;
+          });
+      };
+
+      // Добавить карточку во фрагмент
+      newPointsFragment.appendChild(tripPoint.render());
+    }
+  });
+
+  POINTS_NODE.appendChild(newPointsFragment);
+};
 
 
 // Фильтровать Point
@@ -45,65 +133,16 @@ const filterPoints = (points, filterName) => {
       return points;
 
     case `filter-future`:
-      return points.map((card) =>
-        (card && card.startDateTime > Date.now()) ? card : null);
+      return points.map((point) =>
+        (point && point.dateFrom > Date.now()) ? point : null);
 
     case `filter-past`:
-      return points.map((card) =>
-        (card && card.startDateTime <= Date.now()) ? card : null);
+      return points.map((point) =>
+        (point && point.dateFrom <= Date.now()) ? point : null);
 
     default:
       return -1;
   }
-};
-
-// Обновить данные Point
-const updatePoint = (point, newPoint, ind) => {
-  cards[ind] = Object.assign({}, point, newPoint);
-  return cards[ind];
-};
-
-// Обнулить Point из массива Points
-const deletePoint = (ind) => {
-  cards[ind] = null;
-  return cards;
-};
-
-// Отрисовать карточки точек маршрута
-const renderPoints = (points) => {
-  POINTS_NODE.innerHTML = ``;
-  const newPointsFragment = document.createDocumentFragment();
-
-  points.forEach((point, ind) => {
-    if (point) {
-      const tripPoint = new TripPoint(point);
-      const tripPointEdit = new TripPointEdit(point);
-      // Редактирование карточки
-      tripPoint.onEdit = () => {
-        tripPointEdit.render();
-        POINTS_NODE.replaceChild(tripPointEdit.element, tripPoint.element);
-        tripPoint.unrender();
-      };
-      // Сохранение карточки
-      tripPointEdit.onSave = (newObject) => {
-        const updatedPoint = updatePoint(point, newObject, ind);
-        tripPoint.update(updatedPoint);
-        tripPoint.render();
-        POINTS_NODE.replaceChild(tripPoint.element, tripPointEdit.element);
-        tripPointEdit.unrender();
-      };
-      // Удаление карточки
-      tripPointEdit.onDelete = () => {
-        tripPointEdit.element.remove();
-        tripPointEdit.unrender();
-        deletePoint(ind);
-      };
-      // Добавить карточку во фрагмент
-      newPointsFragment.appendChild(tripPoint.render());
-    }
-  });
-
-  POINTS_NODE.appendChild(newPointsFragment);
 };
 
 // Отрисовать фильтры
@@ -112,8 +151,8 @@ const renderFilter = (filtersData) => {
   // Смена активного фильтра
   filter.onFilter = (evt) => {
     const filterName = evt.target.id;
-    const filteredTasks = filterPoints(cards, filterName);
-    renderPoints(filteredTasks);
+    const filteredTasks = filterPoints(points, filterName);
+    renderPoints(filteredTasks, dests, offers);
   };
   filter.render();
   FILTER_NODE.appendChild(filter.element);
@@ -125,8 +164,8 @@ statsBtn.addEventListener(`click`, (evt) => {
   evt.preventDefault();
 
   // Подготовка данных для диаграмм
-  const moneyChartData = prepareMoneyChartData(cards);
-  const transportChartData = prepareTransportChartData(cards);
+  const moneyChartData = prepareMoneyChartData(points);
+  const transportChartData = prepareTransportChartData(points);
 
   // Форматирование данных для диаграммы Money
   const moneyLabels = moneyChartData.map((item) => getChartLabel(item));
@@ -161,14 +200,31 @@ tableBtn.addEventListener(`click`, (evt) => {
 });
 
 
-const cards = api.getPoints()
-  .then((points) => {
-    console.log(points);
-    renderPoints(points);
+POINTS_NODE.textContent = `Loading route...`;
+
+let points = [];
+let dests = [];
+let offers = [];
+
+api.getPoints()
+  .then((result) => {
+    points = result;
+  })
+  .then(() => {
+    return api.getDestinations();
+  })
+  .then((result) => {
+    dests = result;
+  })
+  .then(() => {
+    return api.getOffers();
+  })
+  .then((result) => {
+    offers = result;
+    renderPoints(points, dests, offers);
+    renderFilter(filters);
   })
   .catch((error) => {
-    console.log(error);
+    POINTS_NODE.textContent = `Something went wrong while loading your route info. Check your connection or try again later`;
     throw error;
   });
-
-renderFilter(filters);

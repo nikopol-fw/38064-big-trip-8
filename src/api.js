@@ -1,5 +1,10 @@
 // api.js
 
+import {ModelPoint} from "./model.point";
+import ModelDestination from "./model.destination";
+import ModelOffer from "./model.offer";
+
+
 const Method = {
   GET: `GET`,
   POST: `POST`,
@@ -8,13 +13,11 @@ const Method = {
 };
 
 /**
- *
  * @param {Promise<response>} response
  *
  * @return {Promise<response>|void}
  */
 const checkStatus = (response) => {
-  console.log(response);
   if (response.status >= 200 && response.status < 300) {
     return response;
   } else {
@@ -36,31 +39,38 @@ export default class API {
 
   getPoints() {
     return this._load(`points`)
-      .then(toJSON);
+      .then(toJSON)
+      .then(ModelPoint.parsePoints);
+  }
+
+  getDestinations() {
+    return this._load(`destinations`)
+      .then(toJSON)
+      .then(ModelDestination.parseDestinations);
   }
 
   getOffers() {
     return this._load(`offers`)
-      .then(toJSON);
+      .then(toJSON)
+      .then(ModelOffer.parseOffers);
   }
 
-  createPoint() {
+  createPoint() {}
 
+  updatePoint(id, data) {
+    return this._load(`points/${id}`, Method.PUT, JSON.stringify(data), new Headers({'Content-Type': `application/json`}))
+      .then(toJSON)
+      .then(ModelPoint.parsePoint);
   }
 
-  updatePoint() {
-
+  deletePoint(id) {
+    return this._load(`points/${id}`, Method.DELETE);
   }
 
-  deletePoint() {
+  _load(path, method = Method.GET, body = null, headers = new Headers()) {
+    headers.append(`Authorization`, this._auth);
 
-  }
-
-  _load(path, method = Method.GET, requestBody = null, requestHeaders = new Headers()) {
-    requestHeaders.append(`Authorization`, this._auth);
-    console.log(requestHeaders.get(`Authorization`));
-
-    return fetch(`${this._url}/${path}`, {method, requestBody, requestHeaders})
+    return fetch(`${this._url}/${path}`, {method, body, headers})
       .then(checkStatus)
       .catch((error) => {
         throw error;
