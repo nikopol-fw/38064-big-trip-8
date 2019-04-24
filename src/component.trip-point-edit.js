@@ -1,5 +1,11 @@
 // component.trip-point-edit.js
 
+/**
+ * @typedef {import('./model.point').default} ModelPoint
+ * @typedef {import('./model.destination').default} ModelDestination
+ * @typedef {import('./model.point').default} ModelOffer
+ */
+
 import flatpickr from 'flatpickr';
 
 import {PointType, pointCategories} from './utils';
@@ -7,18 +13,25 @@ import {PointType, pointCategories} from './utils';
 import Component from './component.base';
 
 
+const ESC_KODE = 27;
+
 // PointTrip edit View
 export default class TripPointEdit extends Component {
-  constructor(points, dests, offers) {
+  /**
+   * @param {ModelPoint} point
+   * @param {ModelDestination[]} destinations
+   * @param {ModelOffer[]} offers
+   */
+  constructor(point, destinations, offers) {
     super();
-    this._id = points.id;
-    this._type = points.type;
-    this._dest = points.dest.name;
-    this._dateFrom = points.dateFrom;
-    this._dateTo = points.dateTo;
-    this._basePrice = points.basePrice;
-    this._offers = points.offers;
-    this._dests = dests;
+    this._id = point.id;
+    this._type = point.type;
+    this._destination = point.destination.name;
+    this._dateFrom = point.dateFrom;
+    this._dateTo = point.dateTo;
+    this._basePrice = point.basePrice;
+    this._offers = point.offers;
+    this._destinations = destinations;
     this._allOffers = offers;
 
     this._element = null;
@@ -27,6 +40,7 @@ export default class TripPointEdit extends Component {
     this._onSavePoint = this._onSavePoint.bind(this);
     this._onDeletePoint = this._onDeletePoint.bind(this);
     this._onChangeForm = this._onChangeForm.bind(this);
+    this._onEscDown = this._onEscDown.bind(this);
   }
 
   get template() {
@@ -60,10 +74,10 @@ export default class TripPointEdit extends Component {
           <div class="point__destination-wrap">
             <label class="point__destination-label" for="destination-${this._id}">${this._getTitle()}</label>
             <input class="point__destination-input" list="destination-select-${this._id}"
-                      id="destination-${this._id}" value="${this._dest}" name="destination">
+                      id="destination-${this._id}" value="${this._destination}" name="destination">
             <datalist id="destination-select-${this._id}">
-              ${this._dests.map((dest) => `
-                <option value="${dest.name}"></option>
+              ${this._destinations.map((destination) => `
+                <option value="${destination.name}"></option>
               `.trim())
               .join(``)}
             </datalist>
@@ -98,7 +112,7 @@ export default class TripPointEdit extends Component {
           </section>
           <section class="point__destination">
             <h3 class="point__details-title">Destination</h3>
-            <p class="point__destination-text">${this._getDescription() ? this._getDescription().descr : ``}</p>
+            <p class="point__destination-text">${this._getDescription() ? this._getDescription().description : ``}</p>
             <div class="point__destination-images">${this._getImages()}</div>
           </section>
           <input type="hidden" class="point__total-price" name="total-price" value="">
@@ -123,25 +137,26 @@ export default class TripPointEdit extends Component {
     this._onDelete = fn;
   }
 
+  set onEsc(fn) {
+    this._onEsc = fn;
+  }
+
   _getTitle() {
     return `
       ${PointType[this._type].name} ${PointType[this._type].category === `travel` ? `to` : `at`}
     `.trim();
   }
 
-  /**
-   * @return {ModelDestination|string}
-   */
   _getDescription() {
-    return this._dests.find((dest) => dest.name === this._dest) || ``;
+    return this._destinations.find((destination) => destination.name === this._destination) || ``;
   }
 
   _getImages() {
-    const descrObject = this._getDescription();
+    const descriptionObject = this._getDescription();
     let imagesHTML = ``;
-    if (descrObject) {
-      imagesHTML = `${descrObject.pics
-        .map((pic) => `<img src="${pic.src}" alt="${pic.description}" class="point__destination-image">`)
+    if (descriptionObject) {
+      imagesHTML = `${descriptionObject.images
+        .map((image) => `<img src="${image.src}" alt="${image.description}" class="point__destination-image">`)
         .join(``)}`;
     }
     return imagesHTML;
@@ -151,7 +166,6 @@ export default class TripPointEdit extends Component {
     let offersHTML = `There are no any offers`;
     const modelOffers = this._allOffers.find((offer) => offer.type === this._type);
     if (modelOffers && modelOffers.offers.size > 0) {
-      // console.log([...modelOffers]);
       offersHTML = [...modelOffers.offers].map((offer) => `
         <input class="point__offers-input visually-hidden" type="checkbox"
                   id="${offer.name.toLowerCase().split(` `).join(`-`)}-${this._id}" name="offer"
@@ -175,17 +189,17 @@ export default class TripPointEdit extends Component {
   }
 
   // Обновляет описание направления
-  _updateViewPointDestChange(destValue) {
-    this._dest = destValue;
-    const descrObject = this._getDescription();
-    let descr = ``;
-    let pics = ``;
-    if (descrObject) {
-      descr = descrObject.descr;
-      pics = this._getImages();
+  _updateViewPointDestinationChange(destinationValue) {
+    this._destination = destinationValue;
+    const descriptionObject = this._getDescription();
+    let description = ``;
+    let images = ``;
+    if (descriptionObject) {
+      description = descriptionObject.description;
+      images = this._getImages();
     }
-    this._element.querySelector(`.point__destination-text`).textContent = descr;
-    this._element.querySelector(`.point__destination-images`).innerHTML = pics;
+    this._element.querySelector(`.point__destination-text`).textContent = description;
+    this._element.querySelector(`.point__destination-images`).innerHTML = images;
   }
 
   // События при изменении данных в форме
@@ -195,18 +209,18 @@ export default class TripPointEdit extends Component {
     }
 
     if (evt.target.name === `destination`) {
-      this._updateViewPointDestChange(evt.target.value);
+      this._updateViewPointDestinationChange(evt.target.value);
     }
   }
 
   // Создает новый объект с данными из формы
   _processForm(formData) {
     const entry = {
-      type: 0,
-      dest: {
+      type: ``,
+      destination: {
         name: ``,
-        description: this._getDescription().descr,
-        pictures: this._getDescription().pics
+        description: this._getDescription().description,
+        pictures: this._getDescription().images
       },
       dateFrom: this._dateFrom,
       dateTo: this._dateTo,
@@ -229,7 +243,6 @@ export default class TripPointEdit extends Component {
   // Submit PointEdit
   _onSavePoint(evt) {
     evt.preventDefault();
-
     if (typeof this._onSave === `function`) {
       const formData = new FormData(this._element.querySelector(`form`));
       const newData = this._processForm(formData);
@@ -242,9 +255,14 @@ export default class TripPointEdit extends Component {
   // Reset PointEdit
   _onDeletePoint(evt) {
     evt.preventDefault();
-
     if (typeof this._onDelete === `function`) {
       this._onDelete(this._id);
+    }
+  }
+
+  _onEscDown(evt) {
+    if (evt.keyCode === ESC_KODE && typeof this._onEsc === `function`) {
+      this._onEsc();
     }
   }
 
@@ -258,6 +276,9 @@ export default class TripPointEdit extends Component {
 
     // Удаление point
     from.addEventListener(`reset`, this._onDeletePoint);
+
+    //
+    document.addEventListener(`keydown`, this._onEscDown);
 
     // Подключаем flatpickr
     const inputDateFrom = this._element.querySelector(`.point__input[name=date-start]`);
@@ -292,11 +313,12 @@ export default class TripPointEdit extends Component {
     form.removeEventListener(`change`, this._onChangeForm);
     form.removeEventListener(`submit`, this._onSavePoint);
     form.removeEventListener(`reset`, this._onDeletePoint);
+    document.removeEventListener(`keydown`, this._onEscDown);
   }
 
   update(data) {
     this._type = data.type;
-    this._dest = data.dest.name;
+    this._destination = data.destination.name;
     this._dateFrom = data.dateFrom;
     this._dateTo = data.dateTo;
     this._basePrice = data.basePrice;
@@ -307,7 +329,7 @@ export default class TripPointEdit extends Component {
    * Метод для связывания полей формы с объектом для записи данных
    * @param {Object} target
    * @param {string} target.type
-   * @param {string} target.dest
+   * @param {Object} target.destination
    * @param {number} target.basePrice
    * @param {Set}    target.offers
    *
@@ -316,7 +338,7 @@ export default class TripPointEdit extends Component {
   static createMapper(target) {
     return {
       'travel-way': (value) => (target.type = value),
-      'destination': (value) => (target.dest.name = value),
+      'destination': (value) => (target.destination.name = value),
       'price': (value) => (target.basePrice = +value),
       'offer': (value) => {
         const [title, price] = value.split(`+`);

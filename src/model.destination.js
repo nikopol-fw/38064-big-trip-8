@@ -1,10 +1,15 @@
 // model.destination.js
 
+/**
+ * Модель Направление
+ * @module model.destination
+ */
+
 export default class ModelDestination {
   constructor(data) {
     this.name = data[`name`];
-    this.descr = data[`description`];
-    this.pics = data[`pictures`];
+    this.description = data[`description`];
+    this.images = data[`pictures`];
   }
 
   static parseDestination(data) {

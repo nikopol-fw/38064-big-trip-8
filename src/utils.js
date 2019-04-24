@@ -81,11 +81,15 @@ const filters = new Set([
 const CHART_PADDING = 5;
 
 
-// Создает и возвращает dom элемент на основе полученной строки шаблона
+/**
+ * Создает и возвращает dom элемент на основе полученной строки шаблона
+ * @param  {string} template - строка с валидной HTML разметкой, в разметке должен быть один родительский элемент
+ * @return {Element}
+ */
 const createElement = (template) => {
   const newElement = document.createElement(`div`);
   newElement.innerHTML = template;
-  return newElement.firstChild;
+  return newElement.firstElementChild;
 };
 
 /**

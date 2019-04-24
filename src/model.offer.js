@@ -1,5 +1,10 @@
 // model.offer.js
 
+/**
+ * Модель Дополнительная опция
+ * @module model.offer
+ */
+
 export default class ModelOffer {
   constructor(data) {
     this.type = data[`type`];

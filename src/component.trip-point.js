@@ -13,7 +13,7 @@ export default class TripPoint extends Component {
     super();
     this._id = data.id;
     this._type = data.type;
-    this._dest = data.dest.name;
+    this._destination = data.destination.name;
     this._dateFrom = data.dateFrom;
     this._dateTo = data.dateTo;
     this._basePrice = data.basePrice;
@@ -29,7 +29,7 @@ export default class TripPoint extends Component {
     return `
     <article class="trip-point">
       <i class="trip-icon">${PointType[this._type].icon}</i>
-      <h3 class="trip-point__title">${this._getTitle()} ${this._dest}</h3>
+      <h3 class="trip-point__title">${this._getTitle()} ${this._destination}</h3>
       <p class="trip-point__schedule">
         <span class="trip-point__timetable"
           >${moment(this._dateFrom).format(`H:mm`)}&nbsp;&mdash; ${moment(this._dateTo).format(`H:mm`)}</span>
@@ -80,7 +80,7 @@ export default class TripPoint extends Component {
 
   update(data) {
     this._type = data.type;
-    this._dest = data.dest.name;
+    this._destination = data.destination.name;
     this._dateFrom = data.dateFrom;
     this._dateTo = data.dateTo;
     this._basePrice = data.basePrice;

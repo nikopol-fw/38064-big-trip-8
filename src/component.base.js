@@ -2,7 +2,6 @@
 
 import {createElement} from './utils';
 
-
 export default class Component {
   constructor() {
     if (new.target === Component) {
@@ -26,6 +25,10 @@ export default class Component {
     return this._element;
   }
 
+  /**
+   * * Вызывает метод unbind для компоненты
+   * * Записывает в поле _element null
+   */
   unrender() {
     this.unbind();
     this._element = null;
