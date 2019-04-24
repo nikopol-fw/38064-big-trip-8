@@ -1,8 +1,8 @@
 // api.js
 
-import {ModelPoint} from "./model.point";
-import ModelDestination from "./model.destination";
-import ModelOffer from "./model.offer";
+import ModelPoint from './model.point';
+import ModelDestination from './model.destination';
+import ModelOffer from './model.offer';
 
 
 const Method = {
@@ -12,13 +12,15 @@ const Method = {
   DELETE: `DELETE`
 };
 
-/**
- * @param {Promise<response>} response
- *
- * @return {Promise<response>|void}
- */
+const HttpCode = {
+  OK: 200,
+  REDIRECT: 300
+};
+
+
+//
 const checkStatus = (response) => {
-  if (response.status >= 200 && response.status < 300) {
+  if (response.status >= HttpCode.OK && response.status < HttpCode.REDIRECT) {
     return response;
   } else {
     throw new Error(`${response.status}: ${response.statusText}`);
@@ -55,7 +57,11 @@ export default class API {
       .then(ModelOffer.parseOffers);
   }
 
-  createPoint() {}
+  createPoint(point) {
+    return this._load(`points`, Method.POST, JSON.stringify(point), new Headers({'Content-Type': `application/json`}))
+      .then(toJSON)
+      .then(ModelPoint.parsePoint);
+  }
 
   updatePoint(id, data) {
     return this._load(`points/${id}`, Method.PUT, JSON.stringify(data), new Headers({'Content-Type': `application/json`}))
